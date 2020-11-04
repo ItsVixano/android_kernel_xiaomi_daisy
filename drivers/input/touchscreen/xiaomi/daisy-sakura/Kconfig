@@ -1,0 +1,2 @@
+source "drivers/input/touchscreen/xiaomi/daisy-sakura/ft5446/Kconfig"
+source "drivers/input/touchscreen/xiaomi/daisy-sakura/gt917d/Kconfig"
