@@ -200,8 +200,6 @@ enum qca_nl80211_vendor_subcmds {
 
     /* Get Wifi Specific Info */
     QCA_NL80211_VENDOR_SUBCMD_GET_WIFI_INFO = 61,
-    /* Start Wifi Memory Dump */
-    QCA_NL80211_VENDOR_SUBCMD_WIFI_LOGGER_MEMORY_DUMP = 63,
 
     /*
      * APIs corresponding to the sub commands 65-68 are deprecated.
@@ -482,7 +480,6 @@ enum qca_nl80211_vendor_subcmds_index {
     /*EXT TDLS*/
     QCA_NL80211_VENDOR_SUBCMD_TDLS_STATE_CHANGE_INDEX,
     QCA_NL80211_VENDOR_SUBCMD_NAN_INDEX,
-    QCA_NL80211_VENDOR_SUBCMD_WIFI_LOGGER_MEMORY_DUMP_INDEX,
 
     QCA_NL80211_VENDOR_SUBCMD_MONITOR_RSSI_INDEX,
     QCA_NL80211_VENDOR_SUBCMD_EXTSCAN_HOTLIST_AP_LOST_INDEX,
@@ -1642,7 +1639,6 @@ enum qca_wlan_vendor_attr_offloaded_packets
  * @WIFI_LOGGER_WATCHDOG_TIMER_SUPPORTED - monitor FW health
  */
 enum wifi_logger_supported_features {
-    WIFI_LOGGER_MEMORY_DUMP_SUPPORTED = (1 << (0)),
     WIFI_LOGGER_PER_PACKET_TX_RX_STATUS_SUPPORTED = (1 << (1)),
     WIFI_LOGGER_CONNECT_EVENT_SUPPORTED = (1 << (2)),
     WIFI_LOGGER_POWER_EVENT_SUPPORTED = (1 << (3)),
@@ -1813,27 +1809,6 @@ backported_cfg80211_vendor_event_alloc(struct wiphy *wiphy,
 int wlan_hdd_send_hang_reason_event(hdd_context_t *hdd_ctx,
 				    unsigned int reason);
 
-/**
- * enum qca_wlan_vendor_attr_memory_dump - values for memory dump attributes
- * @QCA_WLAN_VENDOR_ATTR_MEMORY_DUMP_INVALID - Invalid
- * @QCA_WLAN_VENDOR_ATTR_REQUEST_ID - Indicate request ID
- * @QCA_WLAN_VENDOR_ATTR_MEMDUMP_SIZE - Indicate size of the memory dump
- * @QCA_WLAN_VENDOR_ATTR_MEMORY_DUMP_AFTER_LAST - To keep track of the last enum
- * @QCA_WLAN_VENDOR_ATTR_MEMORY_DUMP_MAX - max value possible for this type
- *
- * enum values are used for NL attributes for data used by
- * QCA_NL80211_VENDOR_SUBCMD_WIFI_LOGGER_MEMORY_DUMP sub command.
- */
-enum qca_wlan_vendor_attr_memory_dump {
-    QCA_WLAN_VENDOR_ATTR_MEMORY_DUMP_INVALID = 0,
-    QCA_WLAN_VENDOR_ATTR_REQUEST_ID = 1,
-    QCA_WLAN_VENDOR_ATTR_MEMDUMP_SIZE = 2,
-
-    QCA_WLAN_VENDOR_ATTR_MEMORY_DUMP_AFTER_LAST,
-    QCA_WLAN_VENDOR_ATTR_MEMORY_DUMP_MAX =
-    QCA_WLAN_VENDOR_ATTR_MEMORY_DUMP_AFTER_LAST - 1,
-};
-
 #if defined(CFG80211_DISCONNECTED_V2) || \
 (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 2, 0))
 static inline void wlan_hdd_cfg80211_indicate_disconnect(struct net_device *dev,
@@ -1899,5 +1874,25 @@ VOS_STATUS wlan_hdd_send_sta_authorized_event(hdd_adapter_t *adapter,
  * Return: 0 for success, non-zero for failure
  */
 int wlan_hdd_disconnect(hdd_adapter_t *pAdapter, u16 reason);
+
+#if defined(CFG80211_SCAN_RANDOM_MAC_ADDR) || \
+	(LINUX_VERSION_CODE >= KERNEL_VERSION(4, 4, 0))
+/**
+ * wlan_hdd_cfg80211_scan_randomization_init() - Enable NL80211 scan randomize
+ * @wiphy: Pointer to wiphy structure
+ *
+ * This function is used to enable NL80211 scan randomization feature when
+ * ini: gEnableMacAddrSpoof is set to MAC_ADDR_SPOOFING_FW_HOST_ENABLE and
+ * cfg80211 supports scan randomization.
+ *
+ * Return: None
+ */
+void wlan_hdd_cfg80211_scan_randomization_init(struct wiphy *wiphy);
+#else
+static inline
+void wlan_hdd_cfg80211_scan_randomization_init(struct wiphy *wiphy)
+{
+}
+#endif
 
 #endif

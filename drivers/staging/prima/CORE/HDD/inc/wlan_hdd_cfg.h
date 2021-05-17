@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2018 The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012-2019 The Linux Foundation. All rights reserved.
  *
  * Previously licensed under the ISC license by Qualcomm Atheros, Inc.
  *
@@ -60,6 +60,12 @@
 /* 802.11 pre-share key length */
 #define WLAN_PSK_STRING_LENGTH   (64)
 #endif /* SAP_AUTH_OFFLOAD */
+
+/*
+ * Maximum length of the default SAP interface created using
+ * gEnabledefaultSAP ini param.
+ */
+#define CFG_CONCURRENT_IFACE_MAX_LEN 16
 
 // Defines for all of the things we read from the configuration (registry).
 
@@ -3002,11 +3008,6 @@ This feature requires the dependent cfg.ini "gRoamPrefer5GHz" set to 1 */
 #define CFG_OPTIMIZE_CA_EVENT_ENABLE     ( 1 )
 #define CFG_OPTIMIZE_CA_EVENT_DEFAULT    ( 0 )
 
-#define CFG_FWR_MEM_DUMP_NAME       "gEnableFwrMemDump"
-#define CFG_FWR_MEM_DUMP_MAX        ( 1 )
-#define CFG_FWR_MEM_DUMP_MIN        ( 0 )
-#define CFG_FWR_MEM_DUMP_DEF        ( 1 )
-
 #define CFG_ACTIVE_PASSIVE_CHAN_CONV_NAME "gActivePassiveChCon"
 #define CFG_ACTIVE_PASSIVE_CHAN_CONV_MIN  (0)
 #define CFG_ACTIVE_PASSIVE_CHAN_CONV_MAX  (1)
@@ -3247,6 +3248,23 @@ This feature requires the dependent cfg.ini "gRoamPrefer5GHz" set to 1 */
 #define CFG_FORCE_RSNE_OVERRIDE_MIN     (0)
 #define CFG_FORCE_RSNE_OVERRIDE_MAX     (1)
 #define CFG_FORCE_RSNE_OVERRIDE_DEFAULT (0)
+
+/*
+ * <ini>
+ * gEnabledefaultSAP - This will control the creation of default SAP
+ * interface
+ * @Default: NULL
+ *
+ * This ini is used for providing control to create a default SAP session
+ * along with the creation of wlan0 and p2p0. The name of the interface is
+ * specified as the parameter
+ *
+ * Usage: External
+ *
+ * </ini>
+ */
+#define CFG_ENABLE_DEFAULT_SAP           "gEnabledefaultSAP"
+#define CFG_ENABLE_DEFAULT_SAP_DEFAULT   ""
 
 /*--------------------------------------------------------------------------- 
   Type declarations
@@ -3791,7 +3809,6 @@ typedef struct
    v_U32_t                     linkFailTxCnt;
    v_BOOL_t                    ignorePeerHTopMode;
    v_U8_t                      gOptimizeCAevent;
-   v_BOOL_t                    enableFwrMemDump;
    v_U8_t                      gActivePassiveChCon;
    v_U32_t                     cfgExtScanConcMode;
    v_U16_t                     rps_mask;
@@ -3864,7 +3881,7 @@ typedef struct
    uint32_t                    btc_dyn_num_bt_ext;
    bool                        indoor_channel_support;
    bool                        force_rsne_override;
-
+   char enabledefaultSAP[CFG_CONCURRENT_IFACE_MAX_LEN];
 } hdd_config_t;
 
 /*--------------------------------------------------------------------------- 
