@@ -2020,23 +2020,29 @@ static int32_t q6asm_callback(struct apr_client_data *data, void *priv)
 					data->opcode, data->token,
 					payload[0], payload[1],
 					data->src_port, data->dest_port);
+				if (payload[1] != 0) {
 					pr_err("%s: cmd = 0x%x returned error = 0x%x\n",
-					__func__, payload[0], payload[1]);
-				if (wakeup_flag) {
-					if ((is_adsp_reg_event(payload[0]) >= 0)
-					|| (payload[0] ==
-					ASM_STREAM_CMD_SET_PP_PARAMS_V2))
-						atomic_set(&ac->cmd_state_pp,
-							payload[1]);
-					else
-						atomic_set(&ac->cmd_state,
-							payload[1]);
-					wake_up(&ac->cmd_wait);
+						__func__, payload[0], payload[1]);
+					if (wakeup_flag) {
+						if ((is_adsp_reg_event(payload[0]) >=
+						     0) ||
+						    (payload[0] ==
+						     ASM_STREAM_CMD_SET_PP_PARAMS_V2))
+							atomic_set(&ac->cmd_state_pp,
+								payload[1]);
+						else
+							atomic_set(&ac->cmd_state,
+								payload[1]);
+						wake_up(&ac->cmd_wait);
+					}
+					spin_unlock_irqrestore(
+						&(session[session_id].session_lock),
+						flags);
+					return 0;
 				}
-				spin_unlock_irqrestore(
-					&(session[session_id].session_lock),
-					flags);
-				return 0;
+			} else {
+				pr_err("%s: payload size of %x is less than expected.\n",
+					__func__, data->payload_size);
 			}
 			if ((is_adsp_reg_event(payload[0]) >= 0) ||
 			    (payload[0] == ASM_STREAM_CMD_SET_PP_PARAMS_V2)) {
@@ -2057,21 +2063,24 @@ static int32_t q6asm_callback(struct apr_client_data *data, void *priv)
 					(uint32_t *)data->payload, ac->priv);
 			break;
 		case ASM_CMD_ADD_TOPOLOGIES:
-			if (data->payload_size >=
-				2 * sizeof(uint32_t) &&
-				payload[1] != 0) {
+			if (data->payload_size >= 2 * sizeof(uint32_t)) {
 				pr_debug("%s:Payload = [0x%x]stat[0x%x]\n",
-					__func__, payload[0], payload[1]);
-				pr_err("%s: cmd = 0x%x returned error = 0x%x\n",
-					 __func__, payload[0], payload[1]);
-				if (wakeup_flag) {
-					atomic_set(&ac->mem_state, payload[1]);
-					wake_up(&ac->mem_wait);
+						__func__, payload[0], payload[1]);
+				if (payload[1] != 0) {
+					pr_err("%s: cmd = 0x%x returned error = 0x%x\n",
+						 __func__, payload[0], payload[1]);
+					if (wakeup_flag) {
+						atomic_set(&ac->mem_state, payload[1]);
+						wake_up(&ac->mem_wait);
+					}
+					spin_unlock_irqrestore(
+						&(session[session_id].session_lock),
+						flags);
+					return 0;
 				}
-				spin_unlock_irqrestore(
-					&(session[session_id].session_lock),
-					flags);
-				return 0;
+			} else {
+				pr_err("%s: payload size of %x is less than expected.\n",
+					__func__, data->payload_size);
 			}
 			if (atomic_read(&ac->mem_state) && wakeup_flag) {
 				atomic_set(&ac->mem_state, 0);
