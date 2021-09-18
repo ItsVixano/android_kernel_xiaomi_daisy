@@ -71,6 +71,7 @@
 #include <linux/spinlock.h>
 #include <uapi/linux/eventpoll.h>
 #include <uapi/linux/android/binder.h>
+#include <uapi/linux/sched/types.h>
 #include <linux/ratelimit.h>
 #include <asm/cacheflush.h>
 
